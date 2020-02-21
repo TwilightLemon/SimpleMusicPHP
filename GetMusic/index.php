@@ -47,11 +47,13 @@ if(is_array($_GET)&&count($_GET)>0)//先判断是否通过get传值了
             $search=$_GET["search"];
             $Musicid=Search($search);
         }
+        $json=GetWeb("https://y.qq.com/n/yqq/song/".$Musicid.".html");
+        $mid=SubString($json,"\"strMediaMid\":\"","\",\"");
+        $title=SubString($json,"<title>"," - QQ音乐-千万正版音乐海量无损曲库新歌热歌天天畅听的高品质音乐平台！</title>");
+        $musicurl = "http://aqqmusic.tc.qq.com/amobile.music.tc.qq.com/C400".$mid.".m4a".$vk."&fromtag=98";
+    }else{
+        exit();
     }
-$json=GetWeb("https://y.qq.com/n/yqq/song/".$Musicid.".html");
-$mid=SubString($json,"\"strMediaMid\":\"","\",\"");
-$title=SubString($json,"<title>"," - QQ音乐-千万正版音乐海量无损曲库新歌热歌天天畅听的高品质音乐平台！</title>");
-$musicurl = "http://aqqmusic.tc.qq.com/amobile.music.tc.qq.com/C400".$mid.".m4a".$vk."&fromtag=98";
 ?>
 
 <html><head>
@@ -92,34 +94,60 @@ audio {
     }
     </style>
 <script>
-function fake_click(obj) {
-    var ev = document.createEvent("MouseEvents");
-    ev.initMouseEvent(
-        "click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null
-    );
-    obj.dispatchEvent(ev);
-}
-function download(name, data) {
-    var urlObject = window.URL || window.webkitURL || window;
+   function downloadUrlFile(url,name) {
+      url= url.replace(/\\/g, '/');
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.responseType = 'blob';
+      xhr.addEventListener("progress", function (evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    console.log(percentComplete);
+                    var pro = document.getElementById("progress");
+                    pro.style.visibility = "visible";
+                    var str="下载中..."+(percentComplete * 100) + "%";
+                    pro.innerHTML=str;
+                    if(percentComplete==1)
+                        pro.innerHTML="已完成";
+                }
+            }, false);
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+            var pro = document.getElementById("progress");
+            pro.style.visibility = "hidden";
+            saveAs(xhr.response, name);
+        }
+      };
 
-    var downloadData = new Blob([data]);
-
-    var save_link = document.createElementNS("http://www.w3.org/1999/xhtml", "a")
-    save_link.href = urlObject.createObjectURL(downloadData);
-    save_link.download = name;
-    fake_click(save_link);
-}
+      xhr.send();
+    }
+    
+    /**
+     * URL方式保存文件到本地
+     * @param data 文件的blob数据
+     * @param name 文件名
+     */
+    function saveAs(data, name) {
+        var urlObject = window.URL || window.webkitURL || window;
+        var export_blob = new Blob([data]);
+        var save_link = document.createElementNS('http://www.w3.org/1999/xhtml', 'a')
+        save_link.href = urlObject.createObjectURL(export_blob);
+        save_link.download = name;
+        save_link.click();
+    }
 		function dlfile(){
-			download("<?php echo $title; ?>.mp3","<?php echo $musicurl; ?>");
+			var url = "<?php echo $musicurl; ?>";
+            var name="<?php echo str_replace("&#45;","-",$title); ?>.mp3";
+		    downloadUrlFile(url,name);
 		}
-		
 	</script>
 </head>
 
 <body>
     <h3><?php echo $title; ?></h3>
 	<div align="center">
-	<button onclick="dlfile()">下载</button>   
+    <button id="download" onclick="dlfile()">下载</button>
+    <h5 style="visibility:hidden;" id="progress"></h5>
      </div>
     <audio controls="" autoplay="" name="media">
         <source src="<?php echo $musicurl; ?>" type="audio/mp3">
