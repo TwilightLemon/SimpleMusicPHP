@@ -37,7 +37,10 @@ function Search($str){
 }
 //获取vkey
 $data = GetWeb("https://i.y.qq.com/v8/playsong.html?songmid=000edOaL1WZOWq");
-$vk = SubString($data,'http://apd-vlive.apdcdn.tc.qq.com/amobile.music.tc.qq.com/C400000By9MX0yKL2c.m4a','&fromtag=38');
+$heaf="http://aqqmusic.tc.qq.com/amobile.music.tc.qq.com/";
+if(!strpos($data,$heaf))
+	$heaf="http://apd-vlive.apdcdn.tc.qq.com/amobile.music.tc.qq.com/";
+$vk = SubString($data,$heaf.'C400000By9MX0yKL2c.m4a','&fromtag=38');
 if(is_array($_GET)&&count($_GET)>0)//先判断是否通过get传值了
     {
         if(isset($_GET["id"]))//是否存在"id"的参数
