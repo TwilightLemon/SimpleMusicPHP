@@ -37,10 +37,8 @@ function Search($str){
 }
 //获取vkey
 $data = GetWeb("https://i.y.qq.com/v8/playsong.html?songmid=000edOaL1WZOWq");
-$heaf="http://aqqmusic.tc.qq.com/amobile.music.tc.qq.com/";
-if(!strpos($data,$heaf))
-	$heaf="http://apd-vlive.apdcdn.tc.qq.com/amobile.music.tc.qq.com/";
-$vk = SubString($data,$heaf.'C400000By9MX0yKL2c.m4a','&fromtag=38');
+$val=SubString($data,'<audio','</audio>');
+$vk = SubString($val,'m4a','&fromtag=38');
 if(is_array($_GET)&&count($_GET)>0)//先判断是否通过get传值了
     {
         if(isset($_GET["id"]))//是否存在"id"的参数
@@ -53,7 +51,7 @@ if(is_array($_GET)&&count($_GET)>0)//先判断是否通过get传值了
         $json=GetWeb("https://y.qq.com/n/yqq/song/".$Musicid.".html");
         $mid=SubString($json,"\"strMediaMid\":\"","\",\"");
         $title=SubString($json,"<title>"," - QQ音乐-千万正版音乐海量无损曲库新歌热歌天天畅听的高品质音乐平台！</title>");
-        $musicurl = "http://musichy.tc.qq.com/amobile.music.tc.qq.com/C400".$mid.".m4a".$vk."&fromtag=98";
+        $musicurl = "http://musichy.tc.qq.com/amobile.music.tc.qq.com/M500".$mid.".mp3".$vk."&fromtag=98";
     }else{
         exit();
     }
